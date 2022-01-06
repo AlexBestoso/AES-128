@@ -1,6 +1,9 @@
 //#include "specialMath.h"
-void MixColumns(char state[17]){
-        const unsigned int mc_constant[16] =
+void MixColumns(char state[STATE_SIZE]){
+	/*
+	 * This matrix is defined specifically by rijndael.
+	 * */
+        const unsigned int mc_constant[STATE_SIZE] =
         {
                 0x02, 0x03, 0x01, 0x01,
                 0x01, 0x02, 0x03, 0x01,
@@ -8,66 +11,44 @@ void MixColumns(char state[17]){
                 0x03, 0x01, 0x01, 0x02
         };
 
-	unsigned int tmp_state[16];
-        unsigned int tmp;
-        unsigned int word[4];
-        unsigned int word_tmp[4];
+	unsigned int _state[STATE_SIZE];
 
-	for(int i=0; i<16; i++){
-		tmp_state[i] = (state[i] & 0xf0)+(state[i] & 0x0f);
+	for(int i=0; i<STATE_SIZE; i++){
+		_state[i] = (state[i] & 0xf0)+(state[i] & 0x0f);
 	}
 
         for(int i=0; i<4; i++){
-                for(int j=0; j<4; j++){
-                        word[j] = tmp_state[(i*4)+j];
-			//printf("%X\n", word[j]);
-                }
-                
                 for(int k=0; k<4; k++){
-                        tmp = 0x0;
+                        unsigned int ret = 0x0;
                         for(int l=0; l<4; l++){
-                                word_tmp[l] = galoisMultiply(mc_constant[(k*4)+l], word[l]);
-                                tmp = tmp ^ word_tmp[l];
-				//printf("%X * %X = %X\n", mc_constant[(k*4)+l], word[l], tmp);
+                                ret = ret ^ galoisMultiply(mc_constant[(k*4)+l], _state[(i*4)+l]);
                         }
-			//printf("\n");
-                        state[(i*4)+k] = tmp;
+                        state[(i*4)+k] = ret;
                 }
         }
 }
 
-void inv_MixColumns(char state[17]){
-        const unsigned int mc_constant[16] =
+void inv_MixColumns(char state[STATE_SIZE]){
+        const unsigned int mc_constant[STATE_SIZE] =
         {
                 0x0e, 0x0b, 0x0d, 0x09,
                 0x09, 0x0e, 0x0b, 0x0d,
                 0x0d, 0x09, 0x0e, 0x0b,
                 0x0b, 0x0d, 0x09, 0x0e
         };
-	unsigned int tmp_state[16];
-        unsigned int tmp;
-        unsigned int word[4];
-        unsigned int word_tmp[4];
 
-	for(int i=0; i<16; i++){
-		tmp_state[i] = (state[i] & 0xf0)+(state[i] & 0x0f);
+	unsigned int _state[STATE_SIZE];
+	for(int i=0; i<STATE_SIZE; i++){
+		_state[i] = (state[i] & 0xf0)+(state[i] & 0x0f);
 	}
 
         for(int i=0; i<4; i++){
-                for(int j=0; j<4; j++){
-                        word[j] = tmp_state[(i*4)+j];
-		//	printf("%X\n", word[j]);
-                }
-
                 for(int k=0; k<4; k++){
-                        tmp = 0x0;
+                        unsigned int ret = 0x0;
                         for(int l=0; l<4; l++){
-                                word_tmp[l] = galoisMultiply(mc_constant[(k*4)+l], word[l]);
-                                tmp = tmp ^ word_tmp[l];
-				//printf("%X * %X = %X\n", mc_constant[(k*4)+l], word[l], tmp);
+                                ret = ret ^ galoisMultiply(mc_constant[(k*4)+l], _state[(i*4)+l]);
                         }
-			//printf("\n");
-                        state[(i*4)+k] = tmp;
+                        state[(i*4)+k] = ret;
                 }
         }
 }

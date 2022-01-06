@@ -1,3 +1,8 @@
+#define KEY_SIZE 16
+#define ROUND_COUNT 10
+#define STATE_SIZE 16
+
+
 int countBinaryDigits(int value){
         int ret = 0;
         while(value > 0){

@@ -28,26 +28,36 @@ int main(void){
 	size_t ExpandedKeySize = (16*(10+1))+1;
 	char expandedKey[ExpandedKeySize];
 
-	char state[17] = "0123456789abcdef\0";
-	char key[17]   = "fedcba9876543210\0";
+	char state[16] = "0123456789abcdef";
+	char key[16]   = "fedcba9876543210";
 	/*
 	 * This second key is used because the
 	 * functions used in this algorithm
 	 * zero out the key buffer.
 	 */
-	char key2[17]  = "fedcba9876543210\0";
+	char key2[16]  = "fedcba9876543210";
 
 	/*
 	 * Enjoy :-)
 	 */
 
-	printf("Pre Encipher  : %s\n", state);
+	printf("Pre Encipher : ");
+	for(int i=0; i<STATE_SIZE; i++){
+		printf("%X ", state[i]);
+	}printf("\n");
+
 	aes_128_encipher(state, key);
 
-	printf("Post Encipher/Pre Decipher  : %s\n", state);	
+	printf("Post Encipher/Pre Decipher : ");
+	for(int i=0; i<STATE_SIZE; i++){
+                printf("%X ", state[i]);
+        }printf("\n");	
 	
 	aes_128_decipher(state, key2);
-	printf("\nPost Decipher : %s\n", state);
+	printf("\nPost Decipher : ");
+	for(int i=0; i<STATE_SIZE; i++){
+                printf("%X ", state[i]);
+        }printf("\n");
 	return 0;
 }
 /*
