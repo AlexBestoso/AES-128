@@ -15,7 +15,7 @@ char getRoundCoeff(int round){
         int test = pow(2, round);
         char ret;
         if(test > 256){/* then it Needs modular reduction */
-                test = rijnMod(test);
+                test = galoisMod(test, 0x11b);
                 ret = (char)test;
                 return ret;
         }

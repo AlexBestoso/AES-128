@@ -3,6 +3,7 @@
  * AES_128_Raw to work
  */
 #include <math.h>
+#include <string.h>
 #include <stdlib.h>
 #include "specialMath.h"
 #include "mixCol.h"

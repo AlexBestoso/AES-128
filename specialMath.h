@@ -1,143 +1,107 @@
-signed int bestModu(signed int n, size_t f){
-        signed int ret = 0;
-        if(f == 0){
-                return -1;
+int countBinaryDigits(int value){
+        int ret = 0;
+        while(value > 0){
+                value = value / 2;
+                ret++;
         }
-
-        if(n == 0){
-        /*
-         * returning 0 because that is what the
-         * result would be!
-         */
-                return 0;
-
-        }else if(n >= 1){
-        /* calculate the working % relative to
-         * positive numbers!
-         */
-                while(n >= 1){
-                        ret++;                          /* increment ret*/
-
-                        if(ret >= f || ret <= -1)       /* is ret outside of the finite field? -1 is bc hackers*/
-                                ret = 0;                /* yes, set to 0 bc if ret >= f we land in a nonexisting "pie slice"*/
-                                                        /* no, rets value is correct */
-                        n--;                            /* decrement the amount of steps remaining */
-                }
-                return ret;                             /* return result when n is a positive number */
-        }else{
-        /* calculate the working % relative to
-         * negative numbers!
-         */
-                while(n <= -1){
-                        ret--;                          /* decrement ret */
-                        if(ret <= -1 || ret >= f)       /* is ret negative? f is bc hackers */
-                                ret = f-1;              /* yes, set ret to f-1 bc to the left of 0 is f-1, not -1(positve amt of "pie slices")*/
-                                                        /* no, rets value is correct */
-                        n++;                            /* decrement total amunt of required steps. */
-                }
-                return ret;
-        }
-
-        /* incase of undefined errror */
-        ret = 1;
         return ret;
 }
 
-int rijnMod(int value){
+int buildBinaryNumber(int value, unsigned int *binaryNumber, int binarySize){
+        // Shift Base value is 0x01
         int ret = 0;
-        const int rijnField = 283;
-        int rijnField_;
-        const int rijnDigits = 9;
-        int tmp = value;
-        int tmp_;
-        int valueDigits = 0;
-        signed int digitDiff;
-
-        if(value <= 256 || value == 0){
-                return value;
-        }
-
-        if(tmp < 0){
-                tmp = (value & 0xf0)+(value & 0x0f);
-        }
-
-        tmp_ = tmp;
-        while(tmp_ > 0){
-                tmp_ = tmp_ / 2;
-                valueDigits++;
-        }
-
-        digitDiff = valueDigits - rijnDigits;
-        rijnField_ = rijnField << digitDiff;
-
-        while(tmp > 256){
-                tmp = tmp ^ rijnField_;
-                if(tmp > 256){
-                        tmp_ = tmp;
-                        rijnField_ = rijnField;
-                        valueDigits = 0;
-                        while(tmp_ > 0){
-                                tmp_ = tmp_ /  2;
-                                valueDigits++;
-                        }
-                        digitDiff = valueDigits - rijnDigits;
-                        rijnField_ = rijnField << digitDiff;
+        memset(binaryNumber, 0x00, binarySize);
+        for(int i=0; i<binarySize; i++){ 
+                binaryNumber[i] = (value & (0x01<<i));
+                if((value & (0x01<<i)) != 0){
+                        ret++;
                 }
         }
-        ret = tmp;
-
-        if(ret < 0){
-                ret = (ret & 0xf0)+(ret & 0x0f);
-        }
         return ret;
+}
+
+int buildBinaryPolynomial(int value, unsigned int *polynomial, size_t size){
+        int binaryDigits = countBinaryDigits(value);
+        unsigned int binaryNumber[binaryDigits];
+        int polySize = buildBinaryNumber(value, binaryNumber, binaryDigits);
+
+        int j = 0;
+        for(int i=0; i<binaryDigits && j < size; i++){
+                if(binaryNumber[i] != 0){
+                        if(j < polySize)
+                                polynomial[j] = i;
+                        j++;
+                }
+        }
+
+        return polySize;
+}
+
+int mod(int value, int field){
+	if((value + field) == 0)
+                return 0;
+
+        int valueIsNegative = (value < 0) ? 1 : 0;
+        int greaterThanField = ((-1)*value > (-1)*field) ? 1 : 0;
+        int fieldIsNegative = (field < 0)  ? 1 : 0;
+
+        if(!valueIsNegative && !fieldIsNegative){
+                return value % field;
+        }else if(!valueIsNegative && fieldIsNegative){
+                field = (-1)*field;
+                return (value % field) * (-1);
+        }else if(greaterThanField && !fieldIsNegative){
+                return field - (((-1)*value) % field);
+        }else if(!greaterThanField && !fieldIsNegative){
+                return field - (-1)*value;
+        }else if(greaterThanField && fieldIsNegative){
+                field = (-1)*field;
+                return (field - (((-1)*value) % field)) * (-1);
+        }else{
+                field = (-1)*field;
+                return (field - (-1)*value) * (-1);
+        }
+}
+
+int galoisMod(int value, int field){
+        if(value <= 256 || value == 0)
+                return value;
+
+        if(value < 0)
+                value = (value & 0xf0)+(value & 0x0f);
+
+        int galoisField = field << (countBinaryDigits(value) - countBinaryDigits(field));
+        while(value > 256){
+                value = value ^ galoisField;
+                if(value <= 256)
+                        break;
+                galoisField = field << (countBinaryDigits(value) - countBinaryDigits(field));
+        }
+
+        if(value < 0)
+                value = (value & 0xf0)+(value & 0x0f);
+
+        return value;
 }
 
 char galoisMultiply(const unsigned int x, char y){
-        char ret;
-        unsigned int pre_ret;
+	unsigned int ret = 0x00;
         const unsigned int shifter = 0x1;
-        unsigned int tmp = x;
-        unsigned int tmp_ = y;
-        int polynomialDigits = 0;
-        int polynomialDigits_valid = 0;
+        unsigned int _y = y;
 
         if(y < 0){
-                tmp_ = (y & 0xf0)+(y & 0x0f);
+                _y = (y & 0xf0)+(y & 0x0f);
         }
 
-        while(tmp > 0){
-                tmp = tmp / 2;
-                polynomialDigits++;
+        unsigned int polynomial[100];
+        size_t polySize = buildBinaryPolynomial(x, polynomial, 100);
+
+        /* where p = 0, and s is an array of polynomial subscripts
+         * p = p[i] XOR (y LEFT_SHIFT s[i])
+         * */
+        for(int i=0; i<polySize && i<100; i++){
+                ret = ret ^ (_y << polynomial[i]);
         }
-
-        unsigned int poly[polynomialDigits];
-
-        for(int i=0; i<polynomialDigits; i++){
-                poly[i] = (x & (shifter<<i));
-                if((x & (shifter<<i)) != 0){
-                        polynomialDigits_valid++;
-                }
-        }
-
-        unsigned int polynomial_array[polynomialDigits_valid];
-
-        tmp = 0; /* Increments the above array */
-        for(int i=0; i<polynomialDigits; i++){
-                if(poly[i] != 0){
-                        if(tmp < polynomialDigits_valid)
-                                polynomial_array[tmp] = i;
-                        tmp++;
-                }
-        }
-
-        pre_ret = 0x0;
-        for(int i=0; i<polynomialDigits_valid; i++){
-                tmp = tmp_;
-                tmp = tmp << polynomial_array[i];
-                pre_ret = pre_ret ^ tmp;
-        }
-
-	ret = pre_ret;
 
         return ret;
 }

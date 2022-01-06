@@ -6,11 +6,11 @@ void ShiftRows(char state[17]){
         unsigned int shiftAmount;
 
         for(int i=0; i<16; i++){
-                shiftAmount = (bestModu((0-i) , 8)) % 4;
+                shiftAmount = (mod((0-i) , 8)) % 4;
                 if(shiftAmount < 0){
                         shiftAmount = shiftAmount * -1;
                 }
-                tmp[bestModu(i+(shiftAmount*4), 16)] = state[i];
+                tmp[mod(i+(shiftAmount*4), 16)] = state[i];
         }
 
         for(int i=0; i<16; i++){
@@ -24,11 +24,11 @@ void inv_ShiftRows(char state[17]){
         int shiftAmount;
 
         for(int i=0; i<16; i++){
-                shiftAmount = bestModu((0-i) , 8) % 4;
+                shiftAmount = mod((0-i) , 8) % 4;
                 if(shiftAmount < 0){
                         shiftAmount = shiftAmount * -1;
                 }
-                tmp[bestModu(i-(shiftAmount*4), 16)] = state[i];
+                tmp[mod(i-(shiftAmount*4), 16)] = state[i];
         }
 
         for(int i=0; i<16; i++){
