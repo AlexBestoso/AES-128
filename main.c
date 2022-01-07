@@ -1,16 +1,4 @@
-/*
- * These Headers are Required for 
- * AES_128_Raw to work
- */
-#include <math.h>
-#include <string.h>
-#include <stdlib.h>
-#include "specialMath.h"
-#include "mixCol.h"
-#include "shiftRow.h"
-#include "aesSbox.h"
-#include "keySched.h"
-#include "aes.h"
+#include "aes128.h"
 
 /*
  * This header is just for the 
@@ -19,23 +7,16 @@
 #include <stdio.h>
 
 int main(void){
-	/*
-	 * All the AES functions were designed
-	 * to encipher strings of data, meaning
-	 * that all the arrys you use with this
-	 * implementation must be null terminated
-	 */
-	size_t ExpandedKeySize = (16*(10+1))+1;
-	char expandedKey[ExpandedKeySize];
-
-	char state[16] = "0123456789abcdef";
-	char key[16]   = "fedcba9876543210";
+	char message[16];strncpy(message, "0123456789abcdef", STATE_SIZE);
+	char key[16]; strncpy(key, "fedcba9876543210", KEY_SIZE);
 	/*
 	 * This second key is used because the
 	 * functions used in this algorithm
 	 * zero out the key buffer.
 	 */
-	char key2[16]  = "fedcba9876543210";
+	char key2[16]; strncpy(key2, "fedcba9876543210", KEY_SIZE);
+
+	AES_128 aes;
 
 	/*
 	 * Enjoy :-)
@@ -43,20 +24,20 @@ int main(void){
 
 	printf("Pre Encipher : ");
 	for(int i=0; i<STATE_SIZE; i++){
-		printf("%X ", state[i]);
+		printf("%X ", message[i]);
 	}printf("\n");
 
-	aes_128_encipher(state, key);
+	aes.encipher(message, key);
 
 	printf("Post Encipher/Pre Decipher : ");
 	for(int i=0; i<STATE_SIZE; i++){
-                printf("%X ", state[i]);
+                printf("%X ", message[i]);
         }printf("\n");	
 	
-	aes_128_decipher(state, key2);
+	aes.decipher(message, key2);
 	printf("\nPost Decipher : ");
 	for(int i=0; i<STATE_SIZE; i++){
-                printf("%X ", state[i]);
+                printf("%X ", message[i]);
         }printf("\n");
 	return 0;
 }
